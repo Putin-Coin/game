@@ -2,7 +2,7 @@
 $(function() {
 
     Game.setScene({
-        "name": "LivingRoom",
+        "name": "living-room",
         "items": [
             {
                 name: "Vase",
