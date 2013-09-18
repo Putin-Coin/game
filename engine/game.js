@@ -23,9 +23,8 @@ Game = (function() {
 
     // Values
     var values = {
-        imagePath:          "Images/{name}.png",
-        examineImageName:   "Examine",
-        takeImageName:      "Take",
+        imagePath:          "images/{name}.png",
+        iconImagePath:      "images/icons/{name}.png",
         iconHideTime:       3000,
         takeText:           "You have taken the {name}",
         panoZIndex: 1,
@@ -206,9 +205,9 @@ Game = (function() {
         displayContainer.append(display);
 
         // Icons
-        examineIcon = getIconHTML(values.examineImageName);
+        examineIcon = getIconHTML("examine");
         displayContainer.append(examineIcon);
-        takeIcon = getIconHTML(values.takeImageName);
+        takeIcon = getIconHTML("take");
         displayContainer.append(takeIcon);
 
     }
@@ -307,7 +306,7 @@ Game = (function() {
     function getIconHTML(name) {
         return $("<img>")
             .attr({
-                src: format(values.imagePath, { name: name })
+                src: format(values.iconImagePath, { name: name })
             })
             .css({
                 display: "none",

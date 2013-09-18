@@ -7,9 +7,9 @@ Pano = (function() {
         viewer = null;
 
     var values = {
-        imagePath: "Scenes/{name}/View_%s.jpg",
-        blankImagePath: "Images/Blank.png",
-        hotspotImagePath: "Images/Blank-1000.png",
+        imagePath: "scenes/{name}/view-%s.jpg",
+        blankImagePath: "images/blank.png",
+        hotspotImagePath: "images/blank-1000.png",
         panoId: "pano-viewer",
         panoTargetId: "pano-container",
         viewHotspotSelector:"#pano-container div[style*='image']",
