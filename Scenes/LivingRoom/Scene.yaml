@@ -1,0 +1,22 @@
+
+name: "LivingRoom"
+
+items:
+  -
+    name: "Vase"
+    title: "Silver Vase"
+    direction: "front"
+    size: [50, 80]
+    position: [580, 750]
+  -
+    name: "Girl"
+    title: [Female Ghost]
+    direction: "back"
+    size: [250, 500]
+    position: [0, 650]
+
+areas:
+  -
+    title: "A coffee table"
+    coords: [341,909,476,769,774,778,891,935]
+    direction: "front"

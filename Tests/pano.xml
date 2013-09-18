@@ -1,0 +1,28 @@
+<krpano>
+
+	<!-- Scene Images -->
+	<image>
+		<cube url="../Scenes/LivingRoom/View_%s.jpg" />
+	</image>
+	
+	<!-- View Settings -->
+	<view hlookat="7" vlookat="5" fovtype="MFOV" fov="100" fovmin="30" fovmax="120" />
+	
+	<!-- Front -->
+	<hotspot name="front"
+     	url="../Scenes/LivingRoom/View_f.jpg"
+     	distorted="true"
+     	ath="0"
+     	atv="0"
+     	width="1000"
+     	height="1000"
+     	edge="lefttop"
+     	ox="-500"
+     	oy="-500" 
+     	alpha="1.0"
+		capture="false"
+		handcursor="false"
+     	zorder="1"
+		/>
+		
+</krpano>
