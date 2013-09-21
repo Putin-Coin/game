@@ -10,7 +10,7 @@ items:
     position: [580, 750]
   -
     name: "Girl"
-    title: [Female Ghost]
+    title: "Female Ghost"
     direction: "back"
     size: [250, 500]
     position: [0, 650]

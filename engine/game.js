@@ -17,15 +17,15 @@ Game = (function() {
         contactContainer,
         displayContainer,
         lightContainer,
-        examineIcon,
-        takeIcon,
-        display;
+        icons,
+        iconsTimer,
+        display,
+        displayTimer;
 
     // Values
     var values = {
+        pointOffset: 10,
         imagePath:          "images/{name}.png",
-        iconImagePath:      "images/icons/{name}.png",
-        iconHideTime:       3000,
         takeText:           "You have taken the {name}",
         panoZIndex: 1,
         areaZIndex: 2,
@@ -33,9 +33,15 @@ Game = (function() {
         lightZIndex: 4,
         displayZIndex: 5,
         contactZIndex: 6,
+        verbs: ["examine", "take", "use", "talk"],
+        millisecondPerChar: 520,
+        iconImagePath:      "images/icons/{name}-orb.png",
+        iconHideTime:       3000,
+        iconOffsetTop: 85,
         iconZIndex: 7,
-        iconWidth: 40,
-        iconHeight: 40
+        iconPadding: 10,
+        iconWidth: 60,
+        iconHeight: 60
     };
 
 
@@ -43,14 +49,20 @@ Game = (function() {
 
     game.say = function(text) {
 
+        // Clear timeout
+        clearTimeout(displayTimer);
+
         // Show text
         display.html(text);
         display.fadeIn();
 
+        // Duration
+        var duration = text.length * values.millisecondPerChar;
+
         // Hide on timer
-        setTimeout(function() {
+        displayTimer = setTimeout(function() {
             display.fadeOut();
-        }, 3000);
+        }, duration);
 
     };
 
@@ -103,7 +115,7 @@ Game = (function() {
         view.append(img);
 
         // Events
-        attachObjEvents(params, img);
+        onObjPoint(params, img);
 
     };
 
@@ -125,64 +137,155 @@ Game = (function() {
         view.imageMap.append(area);
 
         // Events
-        attachObjEvents(params, area);
+        onObjPoint(params, area);
 
     };
 
-    function attachObjEvents(params, obj) {
+
+    /*** Events ***/
+
+    function onBodyPoint(e) {
+
+        // Show feedback
+        var svg = getContactSvgHTML(),
+            circle = $(svg.children()[0]),
+            i = 0;
+
+        circle.attr("cx", e.pageX).attr("cy", e.pageY);
+        contactContainer.append(svg);
+        svg.show();
+
+        var interval = setInterval(function() {
+            if (i == 12) {
+                clearInterval(interval);
+                svg.remove();
+                return;
+            }
+            var opacity = 1 - (.1 * i),
+                size = 1 + i;
+            svg.css("opacity", opacity);
+            circle.attr("r", size);
+            i++
+        }, 50);
+
+        // Hide display
+        display.fadeOut();
+
+        // Save state
+        currentX = e.pageX;
+        currentY = e.pageY;
+
+
+    }
+
+    function onObjPoint(params, obj) {
 
         currentObj = obj;
 
-        obj.click(function() {
+        obj.point(function() {
 
-            // Display helper title
+            // Display title
             game.say(params.title);
 
-            // Examine
-            if (params.examine) {
+            // Init  icons
+            var actionsExist;
+            values.verbs.forEach(function(verb) {
+                var val = params[verb];
+                if (val) {
+                    icons[verb]
+                    .show()
+                    .click(function() {
+                        // Run action
+                        actions["on" + toTitleCase(verb)](params, obj);
+                        // Hide icons
+                        hideIcons();
+                    });
+                    actionsExist = true;
+                }
+            });
 
-                examineIcon.css({
-                    left: currentX - 55,
-                    top: currentY - 65
-                }).fadeIn();
+            if (actionsExist) {
 
-                examineIcon.click(function() {
-                    game.say(params.examine);
+                // Show icons
+                views[params.direction].append(icons);
+                icons.css({
+                    left: params.position[0] - (icons.width() / 2) + (obj.width() / 2),
+                    top: params.position[1] - values.iconOffsetTop
+                })
+                .fadeIn();
+
+                // Hide icons on timer
+                clearTimeout(iconsTimer);
+                iconsTimer = setTimeout(function() {
                     hideIcons();
-                });
+                }, values.iconHideTime);
 
             }
-
-            if (params.take) {
-
-                takeIcon.css({
-                    left: currentX + 10,
-                    top: currentY - 65
-                }).fadeIn();
-
-                takeIcon.click(function() {
-                    obj.hide();
-                    game.say(format(values.takeText, { name: params.title }));
-                    hideIcons();
-                });
-
-            }
-
-            // Hide icons on timer
-            setTimeout(function() {
-                hideIcons();
-            }, values.iconHideTime);
 
         });
 
     }
 
+    // Verb Actions
+    var actions = {
+
+        onExamine: function(params, obj) {
+            game.say(params.examine);
+        },
+
+        onTake: function(params, obj) {
+            obj.hide();
+            game.say(format(values.takeText, { name: params.title }));
+        },
+
+        onUse: function(params, obj) {
+            game.say(params.use);
+        },
+
+        onTalk: function(params, obj) {
+            game.say(params.talk);
+        }
+
+    };
+
 
     /*** Init ***/
 
+    function initEvents() {
+
+        // Add point event
+        $.fn.point = function(callback) {
+
+            var startX, startY;
+
+            $(this)
+            .mousedown(function(e) {
+                startX = e.pageX;
+                startY = e.pageY;
+            })
+            .mouseup(function(e) {
+                // TODO: Implement allowed offset
+                var os = values.pointOffset;
+                if (startX == e.pageX && startY == e.pageY) {
+                    currentX = e.pageX;
+                    currentY = e.pageY;
+                    callback(e);
+                }
+                startX = null;
+                startY = null;
+            });
+
+        };
+
+    }
+
     function initUI() {
 
+        // Body
         body = $("body");
+        body.point(function(e) {
+            onBodyPoint(e);
+        });
 
         // Pano container
         panoContainer = getContainerHTML("pano", true, values.panoZIndex);
@@ -205,61 +308,17 @@ Game = (function() {
         displayContainer.append(display);
 
         // Icons
-        examineIcon = getIconHTML("examine");
-        displayContainer.append(examineIcon);
-        takeIcon = getIconHTML("take");
-        displayContainer.append(takeIcon);
-
-    }
-
-    function initContactZone() {
-
-        var startX, startY;
-
-        body
-        .mousedown(function(e) {
-            startX = e.pageX;
-            startY = e.pageY;
-        })
-        .mouseup(function(e) {
-
-            if (startX == e.pageX && startY == e.pageY) {
-
-                var svg = getContactSvgHTML(),
-                    circle = $(svg.children()[0]),
-                    i = 0;
-
-                circle.attr("cx", e.pageX).attr("cy", e.pageY);
-                contactContainer.append(svg);
-                svg.show();
-
-                var interval = setInterval(function() {
-                    if (i == 12) {
-                        clearInterval(interval);
-                        svg.remove();
-                        return;
-                    }
-                    var opacity = 1 - (.1 * i),
-                        size = 1 + i;
-                    svg.css("opacity", opacity);
-                    circle.attr("r", size);
-                    i++
-                }, 50);
-
-            }
-
-            currentX = e.pageX;
-            currentY = e.pageY;
-            startX = null;
-            startY = null;
-
+        icons = getIconHTML();
+        displayContainer.append(icons);
+        values.verbs.forEach(function(verb) {
+            icons[verb] = icons.find("[src*=" + verb + "]");
         });
 
     }
 
     $(function() {
+        initEvents();
         initUI();
-        initContactZone();
     });
 
 
@@ -303,20 +362,33 @@ Game = (function() {
             })
     }
 
-    function getIconHTML(name) {
-        return $("<img>")
-            .attr({
-                src: format(values.iconImagePath, { name: name })
-            })
-            .css({
-                display: "none",
-                cursor: "pointer",
-                position: "absolute",
-                width: values.iconWidth,
-                height: values.iconHeight,
-                "z-index": values.iconZIndex,
-                "pointer-events": "all"
-            })
+    function getIconHTML() {
+        var table = $("<table><tr></tr></table>");
+        table.css({
+            position: "absolute"
+        });
+        values.verbs.forEach(function(verb) {
+            table.find("tr").append(
+                $("<td></td>")
+                .append(
+                    $("<img>")
+                    .attr({
+                        src: format(values.iconImagePath, { name: verb }),
+                        title: toTitleCase(verb)
+                    })
+                    .css({
+                        display: "none",
+                        cursor: "pointer",
+                        width: values.iconWidth,
+                        height: values.iconHeight,
+                        "z-index": values.iconZIndex,
+                        "pointer-events": "all",
+                        margin: values.iconPadding
+                    })
+                )
+            )
+        });
+        return table;
     }
 
     function getContactSvgHTML() {
@@ -357,6 +429,10 @@ Game = (function() {
         return str;
     }
 
+    function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    }
+
     function ensure() {
         $(arguments).each(function(arg) {
             if (arg === null || arg === undefined || arg === "") {
@@ -367,13 +443,16 @@ Game = (function() {
     }
 
     function hideIcons(fade) {
+
+        clearTimeout(iconsTimer);
         if (fade) {
-            examineIcon.fadeOut();
-            takeIcon.fadeOut();
+            icons.fadeOut(function() {
+                icons.find("img").hide();
+            });
         }
         else {
-            examineIcon.hide();
-            takeIcon.hide();
+            icons.hide();
+            icons.find("img").hide();
         }
     }
 

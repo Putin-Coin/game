@@ -9,7 +9,9 @@ body { overflow: hidden; margin: 0; padding: 0; font-family: Arial, Helvetica, s
 
 #pano-container { z-index: 1; }
 
-#contact-container { z-index: 3; /*background: -webkit-gradient(radial, center center, 0, center center, 470, from(rgba(0,0,0,0)), to(rgba(0,0,0,1)));*/ }
+img { image-rendering:optimize-contrast; image-rendering:-webkit-optimize-contrast; }
+
+#contact-container { z-index: 3; /*background: -webkit-gradient(radial, center center, 0, center center, 270, from(rgba(0,0,0,0)), to(rgba(0,0,0,1)));*/ }
 
 #display-container { display: flex; align-items: start; justify-content: center; z-index: 2; }
 

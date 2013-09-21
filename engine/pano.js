@@ -8,7 +8,7 @@ Pano = (function() {
         viewer = null;
 
     var values = {
-        imagePath: "scenes/{name}/view-%s.jpg",
+        imagePath: "scenes/{name}/view-%s-high.jpg",
         blankImagePath: "images/blank.png",
         hotspotImagePath: "images/blank-1000.png",
         panoId: "pano-viewer",
